@@ -27,25 +27,25 @@ public class AnalisisSemantico {
             }
             switch (tipo) {
                 case '&':
-                    modificarTokenTabla(token.getLexema(), -51, 0, tokenSimbolo);
+                    modificarTokenTabla(token.getLexema(), token.getToken(), 0, tokenSimbolo);
                     tokenSimbolo.setPosTabla(posTabla);
                     posTabla++;
                     tablaSimbolos.put(token.getLexema(), tokenSimbolo);
                     break;
                 case '%':
-                    modificarTokenTabla(token.getLexema(), -52, 0.0f, tokenSimbolo);
+                    modificarTokenTabla(token.getLexema(), token.getToken(), 0.0f, tokenSimbolo);
                     tokenSimbolo.setPosTabla(posTabla);
                     posTabla++;
                     tablaSimbolos.put(token.getLexema(), tokenSimbolo);
                     break;
                 case '$':
-                    modificarTokenTabla(token.getLexema(), -53, "Null", tokenSimbolo);
+                    modificarTokenTabla(token.getLexema(), token.getToken(), "Null", tokenSimbolo);
                     tokenSimbolo.setPosTabla(posTabla);
                     posTabla++;
                     tablaSimbolos.put(token.getLexema(), tokenSimbolo);
                     break;
                 case '#':
-                    modificarTokenTabla(token.getLexema(), -54, false, tokenSimbolo);
+                    modificarTokenTabla(token.getLexema(), token.getToken(), false, tokenSimbolo);
                     tokenSimbolo.setPosTabla(posTabla);
                     posTabla++;
                     tablaSimbolos.put(token.getLexema(), tokenSimbolo);
