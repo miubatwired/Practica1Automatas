@@ -1,0 +1,20 @@
+    /*
+    public static int operacionEntera(int i, Token token, List<Token> tokenList, LinkedHashMap<String, TokenSimbolo> tablaSimbolos) {
+        if (tokenList.get(i + 1).getLexema() != null && tokenList.get(i + 1).getLexema().equals(";")) {
+            return Integer.parseInt(token.getLexema());
+        }
+        int valor;
+        if (!esVariable(token)) {
+            valor = Integer.parseInt(token.getLexema());
+        } else {
+            valor = (int) tablaSimbolos.get(token.getLexema()).getValor();
+        }
+        String operador = tokenList.get(i + 1).getLexema();
+        switch (operador) {
+            case "+":
+                return valor + operacionEntera(i + 2, tokenList.get(i + 2), tokenList, tablaSimbolos);
+            case "-":
+                return valor - operacionEntera(i + 2, tokenList.get(i + 2), tokenList, tablaSimbolos);
+        }
+        return 0;
+    }*/
