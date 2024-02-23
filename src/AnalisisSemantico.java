@@ -10,62 +10,77 @@ public class AnalisisSemantico {
         int posTabla = 0;
         int i = 0;
         //El archivo que tiene la tabla de Tokens se debe encontrar en la carpeta raíz del proyecto
-        File archivo = new File("tablaTokens.txt");
-        File file = new File("Tabla de Símbolos.txt");
+        File archivoTokens = new File("tablaTokens.txt");
+        File archivoSimbolos = new File("Tabla de Símbolos.txt");
         //ArrayList que almacenará los tokens
-        List<Token> tokensList = new ArrayList<>();
-        //Hashtable que almacenará la tabla de símbolos
+        List<Token> tablaTokens;
+        //Hashmap que almacenará la tabla de símbolos
         LinkedHashMap<String, TokenSimbolo> tablaSimbolos = new LinkedHashMap<>();
-        tokensList = procesarArchivo(archivo);
+        //Procesa el archivo con la tabla de tokens
+        tablaTokens = procesarArchivo(archivoTokens);
+        Object[] tipo = new Object[2];
         //Añade las variables declaradas a la tabla de símbolos
-        while (!tokensList.get(i).getLexema().equals("inicio")) {
-            Token token = tokensList.get(i);
-            TokenSimbolo tokenSimbolo = new TokenSimbolo();
-            char tipo = token.getLexema().charAt(token.getLexema().length() - 1);
-            if (tablaSimbolos.containsKey(token.getLexema())) {
-                System.out.println("ERROR: Variable repetida con nombre " + token.getLexema() + " en la línea " + token.getLinea());
+        while (!tablaTokens.get(i).getLexema().equals("inicio")) {
+            Token token = tablaTokens.get(i);
+            if(token.getToken()<=-11 && token.getToken()>=-14){
+                tipo[0] = token.getToken()-40;
+                tipo[1] = token.getLexema();
             }
-            switch (tipo) {
-                case '&':
-                    modificarTokenTabla(token.getLexema(), token.getToken(), 0, tokenSimbolo);
-                    tokenSimbolo.setPosTabla(posTabla);
-                    posTabla++;
-                    tablaSimbolos.put(token.getLexema(), tokenSimbolo);
-                    break;
-                case '%':
-                    modificarTokenTabla(token.getLexema(), token.getToken(), 0.0f, tokenSimbolo);
-                    tokenSimbolo.setPosTabla(posTabla);
-                    posTabla++;
-                    tablaSimbolos.put(token.getLexema(), tokenSimbolo);
-                    break;
-                case '$':
-                    modificarTokenTabla(token.getLexema(), token.getToken(), "Null", tokenSimbolo);
-                    tokenSimbolo.setPosTabla(posTabla);
-                    posTabla++;
-                    tablaSimbolos.put(token.getLexema(), tokenSimbolo);
-                    break;
-                case '#':
-                    modificarTokenTabla(token.getLexema(), token.getToken(), false, tokenSimbolo);
-                    tokenSimbolo.setPosTabla(posTabla);
-                    posTabla++;
-                    tablaSimbolos.put(token.getLexema(), tokenSimbolo);
-                    break;
+            if(esVariable(token)){
+                String lexema = token.getLexema();
+                int numToken = token.getToken();
+                String nombreVariable = lexema.substring(0,lexema.length()-1);
+                TokenSimbolo tokenSimbolo;
+                //Valida variables repetidas
+                if (tablaSimbolos.containsKey(nombreVariable)) {
+                    System.out.println("ERROR: Variable repetida con nombre " + token.getLexema() + " en la línea " + token.getLinea());
+                }
+                if(token.getToken()!=(int)tipo[0] ){
+                    System.out.println("ERROR: La variable " + token.getLexema() + " fue declarada como " + tipo[1] + " pero por su carácter de control debería de ser " + declaracion(token));
+                }
+                //Asigna valores dependiendo el tipo de variable
+                switch (numToken) {
+                    case -51:
+                        tokenSimbolo = new TokenSimbolo(lexema, numToken, 0, "Main", posTabla);
+                        posTabla++;
+                        tablaSimbolos.put(nombreVariable, tokenSimbolo);
+                        break;
+                    case -52:
+                        tokenSimbolo = new TokenSimbolo(lexema, numToken, 0.0f, "Main", posTabla);
+                        posTabla++;
+                        tablaSimbolos.put(nombreVariable, tokenSimbolo);
+                        break;
+                    case -53:
+                        tokenSimbolo = new TokenSimbolo(lexema, numToken, "Null", "Main", posTabla);
+                        posTabla++;
+                        tablaSimbolos.put(nombreVariable, tokenSimbolo);
+                        break;
+                    case -54:
+                        tokenSimbolo = new TokenSimbolo(lexema, numToken, false, "Main", posTabla);
+                        posTabla++;
+                        tablaSimbolos.put(nombreVariable, tokenSimbolo);
+                        break;
+                }
             }
             i++;
         }
         //Modifica la tabla de tokens con su posición en la tabla de símbolos
-        for (i = 0; i < tokensList.size(); i++) {
-            String id = tokensList.get(i).getLexema();
-            TokenSimbolo tokenTabla = tablaSimbolos.get(id);
-            if (tokenTabla != null) {
-                tokensList.get(i).setPosTabla(tokenTabla.getPosTabla());
-            } else if (tokensList.get(i).getToken() >= -54 && tokensList.get(i).getToken() <= -51) {
-                System.out.println("ERROR: Variable " + tokensList.get(i).getLexema() + " no definida en línea" + tokensList.get(i).getLinea());
+        for (i = 0; i < tablaTokens.size(); i++) {
+            Token token = tablaTokens.get(i);
+            if(esVariable(token)){
+                String nombreVariable = token.getLexema();
+                nombreVariable = nombreVariable.substring(0,nombreVariable.length()-1);
+                TokenSimbolo tokenTabla = tablaSimbolos.get(nombreVariable);
+                if (tokenTabla != null) {
+                    tablaTokens.get(i).setPosTabla(tokenTabla.getPosTabla());
+                } else{
+                    System.out.println("ERROR: Variable " + tablaTokens.get(i).getLexema() + " no definida en línea" + tablaTokens.get(i).getLinea());
+                }
             }
         }
-        imprimirTabla(tokensList, "tablaTokens.txt");
+        imprimirTabla(tablaTokens, "tablaTokens.txt");
         //Imprime la tabla de símbolos a un archivo
-        try (FileWriter writer = new FileWriter(file)) {
+        try (FileWriter writer = new FileWriter(archivoSimbolos)) {
             for (Token token : tablaSimbolos.values()) {
                 writer.write(token.toString());
                 writer.write("\n");
@@ -73,16 +88,28 @@ public class AnalisisSemantico {
         }
     }
 
-    public static void modificarTokenTabla(String lexema, int token, Object valor, TokenSimbolo tokenTabla) {
-        tokenTabla.setLexema(lexema);
-        tokenTabla.setToken(token);
-        tokenTabla.setValor(valor);
-        tokenTabla.setAmbito("Main");
+    public static String declaracion(Token token){
+        return switch (token.getToken()) {
+            case -51 -> "entero";
+            case -52 -> "real";
+            case -53 -> "cadena";
+            case -54 -> "lógico";
+            default -> "";
+        };
+    }
+
+    /***
+     * Función para validar si un token es una variable
+     * @param token un objeto Token
+     * @return true si el token es una variable, false si no lo es
+     */
+    public static boolean esVariable(Token token){
+        return token.getToken() <= -51 && token.getToken() >= -54;
     }
 
     /***
      *  Procesa el archivo en un ArrayList de Tokens
-     * @param archivo
+     * @param archivo Un archivo que contenga una tabla de tokens
      * @return Lista que contiene como tipo Token los tokens de la tabla de tokens
      * @throws IOException
      */
@@ -95,7 +122,7 @@ public class AnalisisSemantico {
         while ((linea = br.readLine()) != null) {
             Matcher matcher = pattern.matcher(linea);
             boolean matchFound = matcher.find();
-            Token token = new Token();
+            Token token;
             if (matchFound) {
                 linea = linea.replace(matcher.group(0), "");
                 String[] lineaToken = linea.trim().split("\\s+");
@@ -112,13 +139,12 @@ public class AnalisisSemantico {
     /***
      * Método que imprime una tabla de tokens
      *
-     * @param lista
-     * @param nombre
+     * @param lista ArrayList que contenga objetos Token
+     * @param nombre Nombre del archivo
      * @throws IOException
      */
     public static void imprimirTabla(List<Token> lista, String nombre) throws IOException {
         File file = new File(nombre);
-        file.createNewFile();
         FileWriter writer = new FileWriter(file);
         for (Token token : lista) {
             writer.write(token.toString());
