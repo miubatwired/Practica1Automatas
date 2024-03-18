@@ -1,4 +1,0 @@
-id='num1&', token=-51, valor=0, ambito=Main
-id='num2&', token=-51, valor=0, ambito=Main
-id='calificacion&', token=-51, valor=0, ambito=Main
-id='i&', token=-51, valor=0, ambito=Main
