@@ -105,25 +105,56 @@ public class Vci {
         System.out.println(tiempoFinal);
     }
 
+    /***
+     *
+     * @param token
+     * @return True si es un operador, False si no lo es
+     */
     public static boolean esOperador(Token token) {
         return token.getToken() <= -21 && token.getToken() >= -43 || token.getToken()==-73 || token.getToken()==-74;
     }
 
+    /**
+     *
+     * @param token
+     * @return True si es una función, False si no lo es
+     */
     public static boolean esFuncion(Token token){
         return token.getToken() == -4 || token.getToken() == -5;
     }
+
+    /**
+     *
+     * @param token
+     * @return True si es una constante, False si no lo es
+     */
     public static boolean esConstante(Token token) {
         return token.getToken() <= -61 && token.getToken() >= -65;
     }
 
+    /**
+     *
+     * @param token
+     * @return True si es una variable, False si no lo es
+     */
     public static boolean esVariable(Token token){
         return token.getToken() <= -51 && token.getToken() >= -54;
     }
 
+    /**
+     *
+     * @param token
+     * @return True si es una constante, False si no lo es
+     */
     public static boolean esEstructuraControl(Token token) {
         return token.getToken() <= -6 && token.getToken() >= -10 || token.getToken() == -16 || token.getToken() == -17;
     }
 
+    /**
+     *
+     * @param pila Una pila la cual se vaciará
+     * @param vci  El VCI en el que se meterá todo lo de la pila
+     */
     public static void vaciarPila(Stack<Token> pila, List<Token> vci) {
         while (!pila.isEmpty()) {
             vci.add(pila.pop());
@@ -152,6 +183,11 @@ public class Vci {
     }
 
 
+    /**
+     *
+     * @param token Un token operador
+     * @return La prioridad del token
+     */
     public static int prioridad(Token token) {
         // Define la prioridad de los operadores
         // Puedes ajustar estos valores según la precedencia de los operadores
