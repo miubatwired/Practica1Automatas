@@ -7,7 +7,7 @@ import java.util.Stack;
 public class Vci {
     public static void main(String[] args) throws IOException {
         long  tiempo = System.currentTimeMillis();
-        String nombreArchivo = "C:\\Users\\josue\\Desktop\\vcitest2.txt";
+        String nombreArchivo = "whiletest";
         File archivoTokens = new File(nombreArchivo);
         int inicio = 0;
         int direccion = 0;
@@ -18,7 +18,6 @@ public class Vci {
         Stack<Token> pilaEstatutos = new Stack<>();
         Stack<Integer> pilaDirecciones = new Stack<>();
         tablaTokens = AnalisisSemantico.procesarArchivo(archivoTokens);
-
         for (int i = inicio; i < tablaTokens.size(); i++) {
             Token tokenActual = tablaTokens.get(i);
             if (esOperador(tokenActual)) {
@@ -49,8 +48,8 @@ public class Vci {
                         break;
                     case -17: //hacer
                         vaciarPila(pilaOp, vci);
-                        vci.add(new Token("Token Falso"));
                         pilaDirecciones.push(vci.size());
+                        vci.add(new Token("Token Falso"));
                         vci.add(tokenActual);
                         break;
                     case -9: //repetir
@@ -71,16 +70,6 @@ public class Vci {
                     }
                 }
                 switch (tokenActual.getToken()) {
-                    case -73:
-                        pilaOp.push(tokenActual);
-                        break;
-                    case -74:
-                        Token tokenOp = pilaOp.pop();
-                        while (tokenOp.getToken() != -73) {
-                            vci.add(tokenOp);
-                            tokenOp = pilaOp.pop();
-                        }
-                        break;
                     case -75:
                         vaciarPila(pilaOp, vci);
                         break;
@@ -97,7 +86,6 @@ public class Vci {
                                     }
                                     break;
                                 case -8:
-                                    pilaEstatutos.pop();
                                     vci.set(pilaDirecciones.pop(), new Token(String.valueOf(vci.size()+2)));
                                     vci.add(new Token(String.valueOf(pilaDirecciones.pop())));
                                     vci.add(new Token("end-while"));
@@ -106,7 +94,7 @@ public class Vci {
                         }
                         break;
                 }
-                if(esConstante(tokenActual) || esVariable(tokenActual)){
+                if(esConstante(tokenActual) || esVariable(tokenActual) || esFuncion(tokenActual)){
                     vci.add(tokenActual);
                 }
             }
@@ -118,9 +106,12 @@ public class Vci {
     }
 
     public static boolean esOperador(Token token) {
-        return token.getToken() <= -21 && token.getToken() >= -43;
+        return token.getToken() <= -21 && token.getToken() >= -43 || token.getToken()==-73 || token.getToken()==-74;
     }
 
+    public static boolean esFuncion(Token token){
+        return token.getToken() == -4 || token.getToken() == -5;
+    }
     public static boolean esConstante(Token token) {
         return token.getToken() <= -61 && token.getToken() >= -65;
     }
@@ -140,19 +131,16 @@ public class Vci {
     }
 
     public static void manejarOperador(Token token, Stack<Token> pilaOp, List<Token> vci) {
-        if (token.getToken() == -41) { // Si es paréntesis de apertura
+        if (token.getToken() == -73) { // Si es paréntesis de apertura
             pilaOp.push(token); // Empujar a la pila de operadores
-        } else if (token.getToken() == -42) { // Si es paréntesis de cierre
+        } else if (token.getToken() == -74) { // Si es paréntesis de cierre
             // Sacar operadores de la pila hasta encontrar el paréntesis de apertura correspondiente
-            while (!pilaOp.isEmpty() && pilaOp.peek().getToken() != -41) {
+            while (!pilaOp.isEmpty() && pilaOp.peek().getToken() != -73) {
                 vci.add(pilaOp.pop());
             }
             // Sacar el paréntesis de apertura de la pila
             if (!pilaOp.isEmpty()) {
                 pilaOp.pop();
-            } else {
-                // Si no hay paréntesis de apertura correspondiente, lanzar una excepción
-                throw new IllegalArgumentException("Paréntesis de cierre sin paréntesis de apertura correspondiente.");
             }
         } else {
             // Si es otro operador
