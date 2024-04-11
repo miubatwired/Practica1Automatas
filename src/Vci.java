@@ -6,7 +6,7 @@ import java.util.Stack;
 
 public class Vci {
     public static void main(String[] args) throws IOException {
-        String nombreArchivo = "vcitest2";
+        String nombreArchivo = "C:\\Users\\josue\\Desktop\\vcitest2.txt";
         File archivoTokens = new File(nombreArchivo);
         int inicio = 0;
         int direccion = 0;
@@ -107,12 +107,29 @@ public class Vci {
     }
 
     public static void manejarOperador(Token token, Stack<Token> pilaOp, List<Token> vci) {
-        // Aquí puedes definir la lógica para manejar los operadores
-        while (!pilaOp.isEmpty() && prioridad(pilaOp.peek()) >= prioridad(token)) {
-            vci.add(pilaOp.pop());
+        if (token.getToken() == -41) { // Si es paréntesis de apertura
+            pilaOp.push(token); // Empujar a la pila de operadores
+        } else if (token.getToken() == -42) { // Si es paréntesis de cierre
+            // Sacar operadores de la pila hasta encontrar el paréntesis de apertura correspondiente
+            while (!pilaOp.isEmpty() && pilaOp.peek().getToken() != -41) {
+                vci.add(pilaOp.pop());
+            }
+            // Sacar el paréntesis de apertura de la pila
+            if (!pilaOp.isEmpty()) {
+                pilaOp.pop();
+            } else {
+                // Si no hay paréntesis de apertura correspondiente, lanzar una excepción
+                throw new IllegalArgumentException("Paréntesis de cierre sin paréntesis de apertura correspondiente.");
+            }
+        } else {
+            // Si es otro operador
+            while (!pilaOp.isEmpty() && prioridad(pilaOp.peek()) >= prioridad(token)) {
+                vci.add(pilaOp.pop());
+            }
+            pilaOp.push(token);
         }
-        pilaOp.push(token);
     }
+
 
     public static int prioridad(Token token) {
         // Define la prioridad de los operadores
