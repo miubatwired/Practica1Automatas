@@ -6,19 +6,19 @@ import java.util.Stack;
 
 public class Vci {
     public static void main(String[] args) throws IOException {
+        long  tiempo = System.currentTimeMillis();
         String nombreArchivo = "C:\\Users\\josue\\Desktop\\vcitest2.txt";
         File archivoTokens = new File(nombreArchivo);
         int inicio = 0;
         int direccion = 0;
+        Token temporal = null;
         List<Token> tablaTokens;
         List<Token> vci = new ArrayList<>();
         Stack<Token> pilaOp = new Stack<>();
         Stack<Token> pilaEstatutos = new Stack<>();
         Stack<Integer> pilaDirecciones = new Stack<>();
         tablaTokens = AnalisisSemantico.procesarArchivo(archivoTokens);
-        do{
-            inicio++;
-        } while (tablaTokens.get(inicio).getToken() != -2);
+
         for (int i = inicio; i < tablaTokens.size(); i++) {
             Token tokenActual = tablaTokens.get(i);
             if (esOperador(tokenActual)) {
@@ -36,15 +36,40 @@ public class Vci {
                         vci.add(new Token("Token Falso"));
                         vci.add(tokenActual);
                         break;
-                    case -7:
+                    case -7://sino
                         pilaEstatutos.push(tokenActual);
                         vci.set(pilaDirecciones.pop(), new Token(String.valueOf(vci.size() + 2)));
                         pilaDirecciones.push(vci.size());
                         vci.add(new Token("Token Falso"));
                         vci.add(tokenActual);
                         break;
+                    case -8: //mientras
+                        pilaEstatutos.push(tokenActual);
+                        pilaDirecciones.push(vci.size());
+                        break;
+                    case -17: //hacer
+                        vaciarPila(pilaOp, vci);
+                        vci.add(new Token("Token Falso"));
+                        pilaDirecciones.push(vci.size());
+                        vci.add(tokenActual);
+                        break;
+                    case -9: //repetir
+                        pilaEstatutos.push(tokenActual);
+                        pilaDirecciones.push(vci.size());
+                        break;
+                    case -10: //primera parte until
+                        temporal = tokenActual;
+                        break;
                 }
             } else {
+                //Segunda parte until
+                if (temporal != null) {
+                    if(tokenActual.getToken()==-75){
+                        vci.add(new Token(String.valueOf(pilaDirecciones.pop())));
+                        vci.add(temporal);
+                        temporal = null;
+                    }
+                }
                 switch (tokenActual.getToken()) {
                     case -73:
                         pilaOp.push(tokenActual);
@@ -62,12 +87,21 @@ public class Vci {
                     case -3:
                         if (!pilaEstatutos.isEmpty()) { //fin
                             Token fin = pilaEstatutos.pop();
-                            if (fin.getToken() == -6 || fin.getToken() == -7) {
-                                if (tablaTokens.get(i + 1).getToken() == -7) {
-                                    continue;
-                                } else {
-                                    vci.set(pilaDirecciones.pop(), new Token(String.valueOf(vci.size())));
-                                }
+                            switch (fin.getToken()){
+                                case -6:
+                                case -7:
+                                    if (tablaTokens.get(i + 1).getToken() == -7) {
+                                        continue;
+                                    } else {
+                                        vci.set(pilaDirecciones.pop(), new Token(String.valueOf(vci.size())));
+                                    }
+                                    break;
+                                case -8:
+                                    pilaEstatutos.pop();
+                                    vci.set(pilaDirecciones.pop(), new Token(String.valueOf(vci.size()+2)));
+                                    vci.add(new Token(String.valueOf(pilaDirecciones.pop())));
+                                    vci.add(new Token("end-while"));
+                                    break;
                             }
                         }
                         break;
@@ -76,12 +110,11 @@ public class Vci {
                     vci.add(tokenActual);
                 }
             }
-            System.out.println(pilaOp.toString());
-            System.out.println(pilaDirecciones.toString());
-            System.out.println(pilaEstatutos.toString());
-            System.out.println(vci.toString());
         }
+        long tiempoFinal = System.currentTimeMillis();
+        tiempoFinal = tiempoFinal - tiempo;
         AnalisisSemantico.imprimirTabla(vci,"pruebaVCI");
+        System.out.println(tiempoFinal);
     }
 
     public static boolean esOperador(Token token) {
