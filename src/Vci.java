@@ -6,7 +6,6 @@ import java.util.Stack;
 
 public class Vci {
     public static void main(String[] args) throws IOException {
-        long  tiempo = System.currentTimeMillis();
         String nombreArchivo = "whiletest";
         File archivoTokens = new File(nombreArchivo);
         int inicio = 0;
@@ -99,10 +98,7 @@ public class Vci {
                 }
             }
         }
-        long tiempoFinal = System.currentTimeMillis();
-        tiempoFinal = tiempoFinal - tiempo;
         AnalisisSemantico.imprimirTabla(vci,"pruebaVCI");
-        System.out.println(tiempoFinal);
     }
 
     /***
@@ -189,33 +185,36 @@ public class Vci {
      * @return La prioridad del token
      */
     public static int prioridad(Token token) {
-        // Define la prioridad de los operadores
-        // Puedes ajustar estos valores según la precedencia de los operadores
         int prioridad = 0;
         switch (token.getToken()) {
-            case -22: // + -
-                prioridad = 50;
-                break;
-            case -23:
-            case -24: // * /
+            case -21: // *
+            case -22: // /
+            case -23: // %
                 prioridad = 60;
                 break;
-            // Define más casos según sea necesario
-            case -33:
-            case -31:
+            case -24: // +
+            case -25: // -
+                prioridad = 50;
+                break;
+            case -26: // =
+                prioridad = 0;
+                break;
+            case -31: // <
+            case -32: // <=
+            case -33: // >
+            case -34: // >=
+            case -35: // ==
+            case -36: // !=
                 prioridad = 40;
                 break;
-            case -43:
-                prioridad = 30;
-                break;
-            case -41:
+            case -41: // &&
                 prioridad = 20;
                 break;
-            case -42:
+            case -42: // ||
                 prioridad = 10;
                 break;
-            case -26:
-                prioridad = 0;
+            case -43: // !
+                prioridad = 30;
                 break;
         }
         return prioridad;
