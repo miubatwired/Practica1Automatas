@@ -44,6 +44,7 @@ public class EjecucionVCI {
                 pilaEjecucion.push(token);
                 funcion = true;
             }else if(funcion){
+                funcion = false;
                 //Si se necesita hacer una función, se hace un pop para saber cuál
                 Token io = pilaEjecucion.pop();
                 if(io.getToken()==-4){
@@ -106,7 +107,7 @@ public class EjecucionVCI {
             return Integer.parseInt(operando.getLexema());
         } else if (operando.getToken()==-62) {
             return Float.parseFloat(operando.getLexema());
-        } else if (operando.getToken()==-64) {
+        } else if (operando.getToken()==-64 || operando.getToken()==-65) {
             return Boolean.parseBoolean(operando.getLexema());
         }else{
             return operando.getLexema();
@@ -207,22 +208,46 @@ public class EjecucionVCI {
                     return new Token((int) op1 - (int) op2 + "",-61,-1,0);
                 case -31: // <
                     res = (int) op1 < (int) op2;
-                    return new Token(String.valueOf(res),-61,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -32: // <=
                     res = (int) op1 <= (int) op2;
-                    return new Token(String.valueOf(res),-61,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -33: // >
                     res = (int) op1 > (int) op2;
-                    return new Token(String.valueOf(res),-61,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -34: // >=
                     res = (int) op1 >= (int) op2;
-                    return new Token(String.valueOf(res),-61,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -35: // ==
                     res =  (int)op1 ==  (int)op2;
-                    return new Token(String.valueOf(res),-61,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -36: // !=
                     res =  (int)op1 !=  (int)op2;
-                    return new Token(String.valueOf(res),-61,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
             }
         }else if(tipo==-52 || tipo==-62){
             //Operaciones para todos las variables y constantes de tipo reales
@@ -245,22 +270,46 @@ public class EjecucionVCI {
                     return new Token( (float) op1 -  (float) op2 + "",-62,-1,0);
                 case -31: // <
                     res =  (float) op1 <  (float) op2;
-                    return new Token(String.valueOf(res),-62,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -32: // <=
                     res =  (float) op1 <=  (float) op2;
-                    return new Token(String.valueOf(res),-62,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -33: // >
                     res =  (float) op1 >  (float) op2;
-                    return new Token(String.valueOf(res),-62,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -34: // >=
                     res =  (float) op1 >=  (float) op2;
-                    return new Token(String.valueOf(res),-62,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -35: // ==
                     res =  (float)op1 ==  (float)op2;
-                    return new Token(String.valueOf(res),-62,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -36: // !=
                     res =  (float)op1 !=  (float)op2;
-                    return new Token(String.valueOf(res),-62,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
             }
         }else{
             //Operaciones para todos las variables y constantes de tipo lógicas
