@@ -7,11 +7,12 @@ public class EjecucionVCI {
         List<TokenSimbolo> tablaSimbolos;
         List<TokenDireccion> tablaDirecciones;
         //Se leen los archivos
-        vci = AnalisisSemantico.procesarArchivo(new File("prueba"));
+        vci = AnalisisSemantico.procesarArchivo(new File("VCI.txt"));
         tablaDirecciones = procesarTablaDirecciones(new File("Tabla de Direcciones.txt"));
         tablaSimbolos = procesarTablaSimbolos(new File("Tabla de Símbolos.txt"));
         System.out.println("Tabla de Símbolos antes de ejecución:");
         imprimirTablaAPantalla(tablaSimbolos);
+        System.out.println("\nPantalla");
         //Se obtiene la dirección del vci en el que empieza el programa desde la tabla de direcciones
         int direccionVCI = tablaDirecciones.getFirst().getVCI();
         Stack<Token> pilaEjecucion = new Stack<>();
@@ -83,13 +84,13 @@ public class EjecucionVCI {
                 if(vv){
                     continue;
                 }else{
-                    i=pc_aux;
+                    i=pc_aux-1;
                 }
             }else if(token.getToken() == -7 || token.getLexema().equals("end-while")){
-                i = Integer.parseInt(pilaEjecucion.pop().getLexema());
+                i = Integer.parseInt(pilaEjecucion.pop().getLexema())-1;
             }
         }
-        System.out.println("Tabla de Símbolos después de la ejecución:");
+        System.out.println("\nTabla de Símbolos después de la ejecución:");
         imprimirTablaAPantalla(tablaSimbolos);
         imprimirTabla(tablaSimbolos, "Tabla de Símbolos.txt");
     }
