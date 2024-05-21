@@ -6,40 +6,52 @@ public class EjecucionVCI {
         List<Token> vci;
         List<TokenSimbolo> tablaSimbolos;
         List<TokenDireccion> tablaDirecciones;
+        //Se leen los archivos
         vci = AnalisisSemantico.procesarArchivo(new File("prueba"));
         tablaDirecciones = procesarTablaDirecciones(new File("Tabla de Direcciones.txt"));
         tablaSimbolos = procesarTablaSimbolos(new File("Tabla de Símbolos.txt"));
         System.out.println("Tabla de Símbolos antes de ejecución:");
         imprimirTablaAPantalla(tablaSimbolos);
+        //Se obtiene la dirección del vci en el que empieza el programa desde la tabla de direcciones
         int direccionVCI = tablaDirecciones.getFirst().getVCI();
         Stack<Token> pilaEjecucion = new Stack<>();
         boolean funcion = false;
         for(int i = direccionVCI; i < vci.size(); i++) {
             Token token = vci.get(i);
+            //Se añade a la pila si es constante o es variable (exceptuando cuando se va a imprimir o leer)
             if((esConstante(token) || esVariable(token)) && !funcion) {
                 pilaEjecucion.push(token);
             } else if(esOperador(token)) {
+                //Si es operador se hace pop dos veces
                 Token operandoDos = pilaEjecucion.pop();
                 Token operando = pilaEjecucion.pop();
+                //Se obtiene su valor con su tipo
                 Object op1 = obtenerValor(operando, tablaSimbolos);
                 Object op2 = obtenerValor(operandoDos, tablaSimbolos);
                 int tipo = operando.getToken();
+                //Se realiza la operación
                 Token resultado = ejecutarOperacion(token, op1, op2, tipo);
+                //Si no es null el resultado se añade a la pila
                 if(resultado!=null){
                     pilaEjecucion.push(resultado);
-                }else if(token.getToken()==-26){
+                }else if(token.getToken()==-26){ //si fue null significa que fue un operador de asignación
+                    //Se le asigna el valor del operandoDos al operando uno en la TS
                     tablaSimbolos.get(operando.getPosTabla()).setValor(obtenerValor(operandoDos,tablaSimbolos));
                 }
             } else if(esFuncion(token)){
+                //Si es función se hace push y se utiliza la variable para saber cuándo hay que imprimir/leer
                 pilaEjecucion.push(token);
                 funcion = true;
             }else if(funcion){
+                //Si se necesita hacer una función, se hace un pop para saber cuál
                 Token io = pilaEjecucion.pop();
                 if(io.getToken()==-4){
+                    //Se lee usando scanner
                     System.out.print("Inserte el dato: ");
                     Scanner sc = new Scanner(System.in);
                     String valor = sc.next();
                     try {
+                        //Se asigna a la variable con su tipo correcto
                         switch (token.getToken()) {
                             case -51:
                                 tablaSimbolos.get(token.getPosTabla()).setValor(Integer.parseInt(valor));
@@ -55,10 +67,11 @@ public class EjecucionVCI {
                                 break;
                         }
                     }catch(Exception e){
+                        //Si el usuario ingresa un tipo que no corresponde marca error y termina el programa
                         System.out.println("Dato ingresado de tipo incorrecto");
                         System.exit(0);
                     }
-                }else if(io.getToken()==-5){
+                }else if(io.getToken()==-5){ //Si es un escribir simplemente lo lee de la TS y lo imprime
                     System.out.println(obtenerValor(token, tablaSimbolos));
                 }
             }
@@ -68,6 +81,12 @@ public class EjecucionVCI {
         imprimirTabla(tablaSimbolos, "Tabla de Símbolos.txt");
     }
 
+    /***
+     *
+     * @param operando Un operando del cual se obtendrá el valor
+     * @param tablaSimbolos La tabla de símbolos para buscar su valor en caso que sea necesario
+     * @return regresa el valor real del token
+     */
     public static Object obtenerValor(Token operando, List<TokenSimbolo> tablaSimbolos) {
         if(esVariable(operando)) {
             return tablaSimbolos.get(operando.getPosTabla()).getValor();
@@ -82,6 +101,12 @@ public class EjecucionVCI {
         }
     }
 
+    /***
+     *
+     * @param archivo Un archivo que contiene la tabla de símbolos
+     * @return Una lista que representa la tabla de símbolos de objetos TokenSimbolo
+     * @throws IOException
+     */
     public static List<TokenSimbolo> procesarTablaSimbolos(File archivo) throws IOException {
         List<TokenSimbolo> tabla = new ArrayList<>();
         try(BufferedReader br = new BufferedReader(new FileReader(archivo))) {
@@ -105,6 +130,12 @@ public class EjecucionVCI {
         return tabla;
     }
 
+    /***
+     *
+     * @param archivo Un archivo que contiene la tabla de direcciones
+     * @return  Una lista que representa la tabla de direcciones de objetos TokenDireccion
+     * @throws IOException
+     */
     public static List<TokenDireccion> procesarTablaDirecciones(File archivo) throws IOException {
         List<TokenDireccion> tabla = new ArrayList<>();
         try(BufferedReader br = new BufferedReader(new FileReader(archivo))) {
@@ -118,21 +149,33 @@ public class EjecucionVCI {
         return tabla;
     }
 
+    //True si es constante
     public static boolean esConstante(Token token) {
         return token.getToken() <= -61 && token.getToken() >= -65;
     }
 
+    //True si es variable
     public static boolean esVariable(Token token) {
         return token.getToken() <= -51 && token.getToken() >= -54;
     }
 
+    //True si es operador
     public static boolean esOperador(Token token) {
         return token.getToken() <= -21 && token.getToken() >= -43 || token.getToken() == -73 || token.getToken() == -74;
     }
 
+    /***
+     *
+     * @param operador El operador de la operación
+     * @param op1 Operando uno de la operación
+     * @param op2 Operando dos de la operación
+     * @param tipo El tipo de la operación(Entera, Real o Lógica)
+     * @return Un token con el resultado de la operación
+     */
     public static Token ejecutarOperacion(Token operador, Object op1, Object op2, int tipo) {
-        boolean res;
+        boolean res; //Resultado de la operación lógica
         if(tipo==-51 || tipo==-61){
+            //Operaciones para todos las variables y constantes de tipo enteras
             switch(operador.getToken()){
                 case -21: // *
                     return new Token((int) op1 * (int) op2 + "",-61,-1,0);
@@ -170,6 +213,7 @@ public class EjecucionVCI {
                     return new Token(String.valueOf(res),-61,-1,0);
             }
         }else if(tipo==-52 || tipo==-62){
+            //Operaciones para todos las variables y constantes de tipo reales
             switch(operador.getToken()){
                 case -21: // *
                     return new Token( (float) op1 *  (float) op2 + "",-62,-1,0);
@@ -207,6 +251,7 @@ public class EjecucionVCI {
                     return new Token(String.valueOf(res),-62,-1,0);
             }
         }else{
+            //Operaciones para todos las variables y constantes de tipo lógicas
             switch (operador.getToken()) {
                 case -35: // ==
                     res = (boolean)op1 == (boolean)op2;
@@ -225,10 +270,12 @@ public class EjecucionVCI {
         return null;
     }
 
+    //True si es función
     public static boolean esFuncion(Token token){
         return token.getToken() == -4 || token.getToken() == -5;
     }
 
+    //Imprime la tabla a un archivo
     public static void imprimirTabla(List<TokenSimbolo> lista, String nombre) throws IOException {
         File file = new File(nombre);
         FileWriter writer = new FileWriter(file);
@@ -239,6 +286,7 @@ public class EjecucionVCI {
         writer.close();
     }
 
+    //Imprime la tabla a pantalla
     public static void imprimirTablaAPantalla(List<TokenSimbolo> lista)  {
         for (Token token : lista) {
             System.out.println(token.toString());
