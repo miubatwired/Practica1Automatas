@@ -19,7 +19,7 @@ public class EjecucionVCI {
         for(int i = direccionVCI; i < vci.size(); i++) {
             Token token = vci.get(i);
             //Se añade a la pila si es constante o es variable o  (exceptuando cuando se va a imprimir o leer)
-            if((esConstante(token) || esVariable(token) || token.getToken()==0) && !funcion) {
+            if((esConstante(token) || esVariable(token) || token.getToken()==0) && !funcion && !token.getLexema().equals("end-while")) {
                 pilaEjecucion.push(token);
             } else if(esOperador(token)) {
                 //Si es operador se hace pop dos veces
