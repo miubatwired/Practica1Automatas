@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class EjecucionVCI {
     public static void main(String[] args) throws IOException {
@@ -7,9 +9,10 @@ public class EjecucionVCI {
         List<TokenSimbolo> tablaSimbolos;
         List<TokenDireccion> tablaDirecciones;
         //Se leen los archivos
-        vci = AnalisisSemantico.procesarArchivo(new File("VCI.txt"));
+        vci = procesarArchivo(new File("VCI.txt"));
         tablaDirecciones = procesarTablaDirecciones(new File("Tabla de Direcciones.txt"));
-        tablaSimbolos = procesarTablaSimbolos(new File("Tabla de Símbolos.txt"));
+        String simbolos = "Tabla de Símbolos";
+        tablaSimbolos = procesarTablaSimbolos(new File(simbolos));
         System.out.println("Tabla de Símbolos antes de ejecución:");
         imprimirTablaAPantalla(tablaSimbolos);
         System.out.println("\nPantalla");
@@ -92,7 +95,7 @@ public class EjecucionVCI {
         }
         System.out.println("\nTabla de Símbolos después de la ejecución:");
         imprimirTablaAPantalla(tablaSimbolos);
-        imprimirTabla(tablaSimbolos, "Tabla de Símbolos.txt");
+        imprimirTabla(tablaSimbolos, simbolos);
     }
 
     /***
@@ -369,5 +372,37 @@ public class EjecucionVCI {
         for (Token token : lista) {
             System.out.println(token.toString());
         }
+    }
+
+    /***
+     *  Procesa el archivo en un ArrayList de Tokens
+     * @param archivo Un archivo que contenga una tabla de tokens
+     * @return Lista que contiene como tipo Token los tokens de la tabla de tokens
+     * @throws IOException
+     */
+    public static List<Token> procesarArchivo(File archivo) throws IOException {
+        List<Token> tablaTokens = new ArrayList<>();
+        BufferedReader br = new BufferedReader(new FileReader(archivo));
+        //Patrón para encontrar strings entre comillas en el lexema
+        Pattern pattern = Pattern.compile("\".*\"");
+        String linea;
+        while ((linea = br.readLine()) != null) {
+            Matcher matcher = pattern.matcher(linea);
+            boolean matchFound = matcher.find();
+            Token token;
+            if (matchFound) {
+                linea = linea.replace(matcher.group(0), "");
+                String[] lineaToken = linea.trim().split("\\s+");
+                token = new Token(matcher.group(), Integer.parseInt(lineaToken[0]), Integer.parseInt(lineaToken[1]),
+                        Integer.parseInt(lineaToken[2]));
+            } else {
+                String[] lineaToken = linea.trim().split("\\s+");
+                token = new Token(lineaToken[0], Integer.parseInt(lineaToken[1]), Integer.parseInt(lineaToken[2]),
+                        Integer.parseInt(lineaToken[3]));
+            }
+            tablaTokens.add(token);
+        }
+        br.close();
+        return tablaTokens;
     }
 }

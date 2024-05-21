@@ -12,7 +12,7 @@ public class AnalisisSemantico {
         //El archivo que tiene la tabla de Tokens se debe encontrar en la carpeta raíz del proyecto
         String nombreArchivo = "PRUEBA 1.txt";
         File archivoTokens = new File(nombreArchivo);
-        File archivoSimbolos = new File("Tabla de Símbolos.txt");
+        File archivoSimbolos = new File("Tabla de Símbolos2.txt");
         //ArrayList que almacenará los tokens
         List<Token> tablaTokens;
         //ArrayList que almacenará la tabla de direcciones
