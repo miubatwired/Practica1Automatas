@@ -14,26 +14,38 @@ public class EjecucionVCI {
         tablaSimbolos = procesarTablaSimbolos(new File("Tabla de Símbolos.txt"));
 
         int direccionVCI = tablaDirecciones.getFirst().getVCI();
-        Stack<Object> pilaEjecucion = new Stack<>();
+        Stack<Token> pilaEjecucion = new Stack<>();
         for(int i = direccionVCI; i < vci.size(); i++) {
             Token token = vci.get(i);
             if(esConstante(token) || esVariable(token)) {
-                pilaEjecucion.push(obtenerValor(token, tablaSimbolos));
+                pilaEjecucion.push(token);
             } else if(esOperador(token)) {
-                Object valorOpDos = pilaEjecucion.pop();
-                Object valorOpUno = pilaEjecucion.pop();
-                Object resultado = ejecutarOperacion(token, valorOpUno, valorOpDos);
-                pilaEjecucion.push(resultado);
+                Token operandoDos = pilaEjecucion.pop();
+                Token operando = pilaEjecucion.pop();
+                Object op1 = obtenerValor(operando, tablaSimbolos);
+                Object op2 = obtenerValor(operandoDos, tablaSimbolos);
+                int tipo = operando.getToken();
+                Token resultado = ejecutarOperacion(token, op1, op2, tipo);
+                if(resultado!=null){
+                    pilaEjecucion.push(resultado);
+                }else if(token.getToken()==-26){
+                    tablaSimbolos.get(operando.getPosTabla()).setValor(obtenerValor(operandoDos,tablaSimbolos));
+                }
             }
         }
-        Object resultadoFinal = pilaEjecucion.pop();
-        System.out.println("Resultado final: " + resultadoFinal);
+        System.out.println(tablaSimbolos.toString());
     }
 
     public static Object obtenerValor(Token operando, List<TokenSimbolo> tablaSimbolos) {
         if(esVariable(operando)) {
             return tablaSimbolos.get(operando.getPosTabla()).getValor();
-        } else {
+        } else if(operando.getToken()==-61){
+            return Integer.parseInt(operando.getLexema());
+        } else if (operando.getToken()==-62) {
+            return Float.parseFloat(operando.getLexema());
+        } else if (operando.getToken()==-64) {
+            return Boolean.parseBoolean(operando.getLexema());
+        }else{
             return operando.getLexema();
         }
     }
@@ -86,38 +98,84 @@ public class EjecucionVCI {
         return token.getToken() <= -21 && token.getToken() >= -43 || token.getToken() == -73 || token.getToken() == -74;
     }
 
-    public static Object ejecutarOperacion(Token operador, Object op1, Object op2) {
+    public static Token ejecutarOperacion(Token operador, Object op1, Object op2, int tipo) {
+        boolean res;
+        if(tipo==-51 || tipo==-61){
+            switch(operador.getToken()){
+                case -21: // *
+                    return new Token((int) op1 * (int) op2 + "",-61,-1,0);
+                case -22: // /
+                    return new Token((int) op1 / (int) op2 + "",-61,-1,0);
+                case -23: // %
+                    return new Token((int) op1 % (int) op2 + "",-61,-1,0);
+                case -24: // +
+                    return new Token((int) op1 + (int) op2 + "",-61,-1,0);
+                case -25: // -
+                    return new Token((int) op1 - (int) op2 + "",-61,-1,0);
+                case -31: // <
+                    res = (int) op1 < (int) op2;
+                    return new Token(String.valueOf(res),-61,-1,0);
+                case -32: // <=
+                    res = (int) op1 <= (int) op2;
+                    return new Token(String.valueOf(res),-61,-1,0);
+                case -33: // >
+                    res = (int) op1 > (int) op2;
+                    return new Token(String.valueOf(res),-61,-1,0);
+                case -34: // >=
+                    res = (int) op1 >= (int) op2;
+                    return new Token(String.valueOf(res),-61,-1,0);
+                case -35: // ==
+                    res =  (int)op1 ==  (int)op2;
+                    return new Token(String.valueOf(res),-61,-1,0);
+                case -36: // !=
+                    res =  (int)op1 !=  (int)op2;
+                    return new Token(String.valueOf(res),-61,-1,0);
+            }
+        }else if(tipo==-52 || tipo==-62){
+            switch(operador.getToken()){
+                case -21: // *
+                    return new Token( (float) op1 *  (float) op2 + "",-62,-1,0);
+                case -22: // /
+                    return new Token( (float) op1 /  (float) op2 + "",-62,-1,0);
+                case -23: // %
+                    return new Token( (float) op1 %  (float) op2 + "",-62,-1,0);
+                case -24: // +
+                    return new Token( (float) op1 +  (float) op2 + "",-62,-1,0);
+                case -25: // -
+                    return new Token( (float) op1 -  (float) op2 + "",-62,-1,0);
+                case -31: // <
+                    res =  (float) op1 <  (float) op2;
+                    return new Token(String.valueOf(res),-62,-1,0);
+                case -32: // <=
+                    res =  (float) op1 <=  (float) op2;
+                    return new Token(String.valueOf(res),-62,-1,0);
+                case -33: // >
+                    res =  (float) op1 >  (float) op2;
+                    return new Token(String.valueOf(res),-62,-1,0);
+                case -34: // >=
+                    res =  (float) op1 >=  (float) op2;
+                    return new Token(String.valueOf(res),-62,-1,0);
+                case -35: // ==
+                    res =  (float)op1 ==  (float)op2;
+                    return new Token(String.valueOf(res),-62,-1,0);
+                case -36: // !=
+                    res =  (float)op1 !=  (float)op2;
+                    return new Token(String.valueOf(res),-62,-1,0);
+            }
+        }
         switch (operador.getToken()) {
-            case -21: // *
-                return (int) op1 * (int) op2;
-            case -22: // /
-                return (int) op1 / (int) op2;
-            case -23: // %
-                return (int) op1 % (int) op2;
-            case -24: // +
-                return (int) op1 + (int) op2;
-            case -25: // -
-                return (int) op1 - (int) op2;
-            case -26: // =
-                return op1.equals(op2);
-            case -31: // <
-                return (int) op1 < (int) op2;
-            case -32: // <=
-                return (int) op1 <= (int) op2;
-            case -33: // >
-                return (int) op1 > (int) op2;
-            case -34: // >=
-                return (int) op1 >= (int) op2;
             case -35: // ==
-                return op1.equals(op2);
+                res = (boolean)op1 == (boolean)op2;
+                return new Token(String.valueOf(res),-64,-1,0);
             case -36: // !=
-                return !op1.equals(op2);
+                res = (boolean)op1 != (boolean)op2;
+                return new Token(String.valueOf(res),-64,-1,0);
             case -41: // &&
-                return (boolean) op1 && (boolean) op2;
+                res = (boolean)op1 && (boolean) op2;
+                return new Token(String.valueOf(res),-64,-1,0);
             case -42: // ||
-                return (boolean) op1 || (boolean) op2;
-            case -43: // !
-                return !(boolean) op1;
+                res = (boolean)op1 || (boolean) op2;
+                return new Token(String.valueOf(res),-64,-1,0);
             default:
                 return null;
         }
