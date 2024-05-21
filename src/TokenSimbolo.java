@@ -7,10 +7,17 @@ public class TokenSimbolo extends Token {
     }
 
     public TokenSimbolo(String id, int token, Object valor, String ambito, int posTabla) {
-        super(id, token, posTabla);
+        super(id, token);
         this.ambito = ambito;
         this.valor = valor;
     }
+
+    public TokenSimbolo(String id, int token, Object valor, String ambito) {
+        super(id, token);
+        this.ambito = ambito;
+        this.valor = valor;
+    }
+
 
     public Object getValor() {
         return valor;

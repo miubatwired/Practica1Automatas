@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class Vci {
     public static void main(String[] args) throws IOException {
-        String nombreArchivo = "siEjemplo.txt";
+        String nombreArchivo = "vcitest";
         File archivoTokens = new File(nombreArchivo);
         int inicio = 0;
         int direccion = 0;
@@ -108,7 +108,7 @@ public class Vci {
                 }
             }
         }
-        imprimirTabla(vci, "VCI");
+            imprimirTabla(vci, "VCI");
     }
 
     /***
