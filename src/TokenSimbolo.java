@@ -39,8 +39,8 @@ public class TokenSimbolo extends Token {
     public String toString() {
         return
                 super.getLexema() +
-                "\t" + super.getToken() +
-                "\t" + valor +
-                "\t" + ambito;
+                " " + super.getToken() +
+                " " + valor +
+                " " + ambito;
     }
 }

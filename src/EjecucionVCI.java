@@ -1,23 +1,22 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class EjecucionVCI {
     public static void main(String[] args) throws IOException {
         List<Token> vci;
         List<TokenSimbolo> tablaSimbolos;
         List<TokenDireccion> tablaDirecciones;
-
         vci = AnalisisSemantico.procesarArchivo(new File("prueba"));
         tablaDirecciones = procesarTablaDirecciones(new File("Tabla de Direcciones.txt"));
         tablaSimbolos = procesarTablaSimbolos(new File("Tabla de Símbolos.txt"));
-
+        System.out.println("Tabla de Símbolos antes de ejecución:");
+        imprimirTablaAPantalla(tablaSimbolos);
         int direccionVCI = tablaDirecciones.getFirst().getVCI();
         Stack<Token> pilaEjecucion = new Stack<>();
+        boolean funcion = false;
         for(int i = direccionVCI; i < vci.size(); i++) {
             Token token = vci.get(i);
-            if(esConstante(token) || esVariable(token)) {
+            if((esConstante(token) || esVariable(token)) && !funcion) {
                 pilaEjecucion.push(token);
             } else if(esOperador(token)) {
                 Token operandoDos = pilaEjecucion.pop();
@@ -31,9 +30,42 @@ public class EjecucionVCI {
                 }else if(token.getToken()==-26){
                     tablaSimbolos.get(operando.getPosTabla()).setValor(obtenerValor(operandoDos,tablaSimbolos));
                 }
+            } else if(esFuncion(token)){
+                pilaEjecucion.push(token);
+                funcion = true;
+            }else if(funcion){
+                Token io = pilaEjecucion.pop();
+                if(io.getToken()==-4){
+                    System.out.print("Inserte el dato: ");
+                    Scanner sc = new Scanner(System.in);
+                    String valor = sc.next();
+                    try {
+                        switch (token.getToken()) {
+                            case -51:
+                                tablaSimbolos.get(token.getPosTabla()).setValor(Integer.parseInt(valor));
+                                break;
+                            case -52:
+                                tablaSimbolos.get(token.getPosTabla()).setValor(Float.parseFloat(valor));
+                                break;
+                            case -53:
+                                tablaSimbolos.get(token.getPosTabla()).setValor(valor);
+                                break;
+                            case -54:
+                                tablaSimbolos.get(token.getPosTabla()).setValor(Boolean.parseBoolean(valor));
+                                break;
+                        }
+                    }catch(Exception e){
+                        System.out.println("Dato ingresado de tipo incorrecto");
+                        System.exit(0);
+                    }
+                }else if(io.getToken()==-5){
+                    System.out.println(obtenerValor(token, tablaSimbolos));
+                }
             }
         }
-        System.out.println(tablaSimbolos.toString());
+        System.out.println("Tabla de Símbolos después de la ejecución:");
+        imprimirTablaAPantalla(tablaSimbolos);
+        imprimirTabla(tablaSimbolos, "Tabla de Símbolos.txt");
     }
 
     public static Object obtenerValor(Token operando, List<TokenSimbolo> tablaSimbolos) {
@@ -105,7 +137,13 @@ public class EjecucionVCI {
                 case -21: // *
                     return new Token((int) op1 * (int) op2 + "",-61,-1,0);
                 case -22: // /
-                    return new Token((int) op1 / (int) op2 + "",-61,-1,0);
+                    try{
+                        return new Token((int) op1 / (int) op2 + "",-61,-1,0);
+                    }catch(ArithmeticException e){
+                        System.out.println("No se puede dividir por 0 en linea " + operador.getLinea());
+                        System.exit(0);
+                    }
+                    break;
                 case -23: // %
                     return new Token((int) op1 % (int) op2 + "",-61,-1,0);
                 case -24: // +
@@ -136,7 +174,13 @@ public class EjecucionVCI {
                 case -21: // *
                     return new Token( (float) op1 *  (float) op2 + "",-62,-1,0);
                 case -22: // /
-                    return new Token( (float) op1 /  (float) op2 + "",-62,-1,0);
+                   try{
+                        return new Token( (float) op1 /  (float) op2 + "",-62,-1,0);
+                    }catch(ArithmeticException e){
+                       System.out.println("No se puede dividir por 0 en línea " + operador.getLinea());
+                       System.exit(0);
+                    }
+                   break;
                 case -23: // %
                     return new Token( (float) op1 %  (float) op2 + "",-62,-1,0);
                 case -24: // +
@@ -162,22 +206,42 @@ public class EjecucionVCI {
                     res =  (float)op1 !=  (float)op2;
                     return new Token(String.valueOf(res),-62,-1,0);
             }
+        }else{
+            switch (operador.getToken()) {
+                case -35: // ==
+                    res = (boolean)op1 == (boolean)op2;
+                    return new Token(String.valueOf(res),-64,-1,0);
+                case -36: // !=
+                    res = (boolean)op1 != (boolean)op2;
+                    return new Token(String.valueOf(res),-64,-1,0);
+                case -41: // &&
+                    res = (boolean)op1 && (boolean) op2;
+                    return new Token(String.valueOf(res),-64,-1,0);
+                case -42: // ||
+                    res = (boolean)op1 || (boolean) op2;
+                    return new Token(String.valueOf(res),-64,-1,0);
+            }
         }
-        switch (operador.getToken()) {
-            case -35: // ==
-                res = (boolean)op1 == (boolean)op2;
-                return new Token(String.valueOf(res),-64,-1,0);
-            case -36: // !=
-                res = (boolean)op1 != (boolean)op2;
-                return new Token(String.valueOf(res),-64,-1,0);
-            case -41: // &&
-                res = (boolean)op1 && (boolean) op2;
-                return new Token(String.valueOf(res),-64,-1,0);
-            case -42: // ||
-                res = (boolean)op1 || (boolean) op2;
-                return new Token(String.valueOf(res),-64,-1,0);
-            default:
-                return null;
+        return null;
+    }
+
+    public static boolean esFuncion(Token token){
+        return token.getToken() == -4 || token.getToken() == -5;
+    }
+
+    public static void imprimirTabla(List<TokenSimbolo> lista, String nombre) throws IOException {
+        File file = new File(nombre);
+        FileWriter writer = new FileWriter(file);
+        for (Token token : lista) {
+            writer.write(token.toString());
+            writer.write("\n");
+        }
+        writer.close();
+    }
+
+    public static void imprimirTablaAPantalla(List<TokenSimbolo> lista)  {
+        for (Token token : lista) {
+            System.out.println(token.toString());
         }
     }
 }
