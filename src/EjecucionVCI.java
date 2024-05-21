@@ -18,8 +18,8 @@ public class EjecucionVCI {
         boolean funcion = false;
         for(int i = direccionVCI; i < vci.size(); i++) {
             Token token = vci.get(i);
-            //Se añade a la pila si es constante o es variable (exceptuando cuando se va a imprimir o leer)
-            if((esConstante(token) || esVariable(token)) && !funcion) {
+            //Se añade a la pila si es constante o es variable o  (exceptuando cuando se va a imprimir o leer)
+            if((esConstante(token) || esVariable(token) || token.getToken()==0) && !funcion) {
                 pilaEjecucion.push(token);
             } else if(esOperador(token)) {
                 //Si es operador se hace pop dos veces
@@ -37,6 +37,7 @@ public class EjecucionVCI {
                 }else if(token.getToken()==-26){ //si fue null significa que fue un operador de asignación
                     //Se le asigna el valor del operandoDos al operando uno en la TS
                     tablaSimbolos.get(operando.getPosTabla()).setValor(obtenerValor(operandoDos,tablaSimbolos));
+
                 }
             } else if(esFuncion(token)){
                 //Si es función se hace push y se utiliza la variable para saber cuándo hay que imprimir/leer
@@ -74,6 +75,17 @@ public class EjecucionVCI {
                 }else if(io.getToken()==-5){ //Si es un escribir simplemente lo lee de la TS y lo imprime
                     System.out.println(obtenerValor(token, tablaSimbolos));
                 }
+            }else if(token.getToken() == -16 || token.getToken()==-17 || token.getToken()==-10){
+                // si es then/do/until
+                int pc_aux=Integer.parseInt(pilaEjecucion.pop().getLexema());
+                boolean vv = (boolean) obtenerValor(pilaEjecucion.pop(),tablaSimbolos);
+                if(vv){
+                    continue;
+                }else{
+                    i=pc_aux;
+                }
+            }else if(token.getToken() == -7 || token.getLexema().equals("end-while")){
+                i = Integer.parseInt(pilaEjecucion.pop().getLexema());
             }
         }
         System.out.println("Tabla de Símbolos después de la ejecución:");
@@ -255,16 +267,32 @@ public class EjecucionVCI {
             switch (operador.getToken()) {
                 case -35: // ==
                     res = (boolean)op1 == (boolean)op2;
-                    return new Token(String.valueOf(res),-64,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -36: // !=
                     res = (boolean)op1 != (boolean)op2;
-                    return new Token(String.valueOf(res),-64,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -41: // &&
                     res = (boolean)op1 && (boolean) op2;
-                    return new Token(String.valueOf(res),-64,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
                 case -42: // ||
                     res = (boolean)op1 || (boolean) op2;
-                    return new Token(String.valueOf(res),-64,-1,0);
+                    if(res){
+                        return new Token("true",-64,-1,0);
+                    }else{
+                        return new Token("false",-65,-1,0);
+                    }
             }
         }
         return null;

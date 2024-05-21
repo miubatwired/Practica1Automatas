@@ -10,7 +10,7 @@ public class AnalisisSemantico {
         int posTabla = 0;
         int i = 0;
         //El archivo que tiene la tabla de Tokens se debe encontrar en la carpeta raíz del proyecto
-        String nombreArchivo = "vcitest";
+        String nombreArchivo = "PRUEBA 1.txt";
         File archivoTokens = new File(nombreArchivo);
         File archivoSimbolos = new File("Tabla de Símbolos.txt");
         //ArrayList que almacenará los tokens
